@@ -1,0 +1,40 @@
+
+name: Docker Debugging CI
+
+on:
+  push:
+    branches: [docker-debugging]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build fixed images
+        run: |
+          cd broken-app
+          for n in 1 2 3 4; do
+            docker build -f Dockerfile.$n -t fixed:$n .
+          done
+
+      - name: Test containers
+        run: |
+          cd broken-app
+          for n in 1 2 3 4; do
+            if [ "$n" = "3" ]; then
+              port=8080
+            else
+              port=3000
+            fi
+
+            docker run -d --name test$n \
+              -e PORT=$port -e GREETING=hello \
+              -p 3000:$port fixed:$n
+
+            sleep 2
+            curl --fail http://localhost:3000/ | grep "hello from pid"
+            docker rm -f test$n
+          done
+

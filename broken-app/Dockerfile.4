@@ -6,4 +6,4 @@ ENV GREETING=hello
 ENV PORT=3000
 EXPOSE 3000
 # shell form on purpose: the & is interpreted by sh
-CMD node app.js &
+CMD ["node", "app.js"]
