@@ -2,13 +2,12 @@ services:
   backend:
     build: ./backend
     environment:
-      PORT: 3000
+      
       DATA_FILE: /app/data/notes.json
       CORS_ORIGIN: http://localhost:8080
     volumes:
       - notes-data:/app/data
-    ports:
-      - "3000:3000"
+    
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
       interval: 10s
@@ -18,12 +17,21 @@ services:
     build:
       context: ./frontend
       args:
-        API_URL: http://localhost:3000
+        API_URL: /backend
     ports:
       - "8080:80"
     depends_on:
       backend:
         condition: service_healthy
 
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: notesuser
+      POSTGRES_PASSWORD: labpassword
+      POSTGRES_DB: notesdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
 volumes:
   notes-data:
+  postgres-data:
